@@ -1,68 +1,38 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { isAuthenticated } from '../../utils/auth';
-import './Home.css';
+import { Link } from "react-router-dom";
+import "./Home.css";
+import c from "../../utils/latinToCyrillic";
 
-const Home: React.FC = () => {
-  const navigate = useNavigate();
-
-  const handleGetStarted = (): void => {
-    if (isAuthenticated()) {
-      navigate('/profile');
-    } else {
-      navigate('/register');
-    }
-  };
-
+const Home = () => {
   return (
-    <div className="home">
-      <div className="hero-section">
-        <div className="hero-content">
-          <h1 className="hero-title">
-            Bilimingizni <span className="highlight">sinovdan o'tkazing</span> va natijangizni kuzating
-          </h1>
-          <p className="hero-subtitle">
-            Zamonaviy test platformasi bilan o'z bilimingizni o'lchang va rivojlantiring
-          </p>
-          
-          <div className="hero-buttons">
-            <button className="btn btn-primary btn-large" onClick={handleGetStarted}>
-              Boshlash
-            </button>
-            <button className="btn btn-outline btn-large" onClick={() => navigate('/login')}>
-              Kirish
-            </button>
-          </div>
-        </div>
-        
-        <div className="hero-features">
-          <div className="feature-card">
-            <div className="feature-icon">🏢</div>
-            <h3>Mavzu bo'yicha testlar</h3>
-            <p>O'zingizni qiziqtirgan mavzular bo'yicha test yeching</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">✔</div>
-            <h3>Imtihon topshirish</h3>
-            <p>Haqiqiy imtihon sharoitida o'z bilimingizni sinang</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">📊</div>
-            <h3>Batafsil statistika</h3>
-            <p>O'z natijalaringizni kuzatib boring va rivojlaning</p>
-          </div>
-        </div>
-      </div>
+    <div id="home_page" className="min-h-screen flex flex-col items-center justify-center bg-gray-900 p-4 text-gray-100">
+      {/* Loyiha nomi */}
+      <h1 className="text-4xl font-bold text-blue-400 mb-4">
+        {c.t("Avto Test")}
+      </h1>
 
-      <section className="contact-section">
-        <h2>Bog'lanish</h2>
-        <div className="telegram-contact">
-          <span className="telegram-icon">📱</span>
-          <a href="https://t.me/edutest_ai" className="telegram-link">
-            Telegram: @edutest_ai
-          </a>
-        </div>
-      </section>
+      {/* Qisqacha tavsif */}
+      <p className="text-center text-gray-300 mb-8 max-w-xl">
+        
+        {c.t("Avto Test — haydovchilik guvohnomasi imtihonlariga tayyorgarlik ko‘rish uchun interaktiv test platformasi. Siz turli testlar orqali bilimlaringizni sinab ko‘rishingiz mumkin.")}
+      </p>
+
+      {/* Kirish va Test bo‘limlari tugmalari */}
+      <div className="flex gap-4">
+        <Link
+          to="/login"
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition"
+        >
+          {c.t("Kirish")}
+          
+        </Link>
+        <Link
+          to="/connections"
+          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-500 transition"
+        >
+          
+        {c.t("Biz bilan bog'laning")}
+        </Link>
+      </div>
     </div>
   );
 };
