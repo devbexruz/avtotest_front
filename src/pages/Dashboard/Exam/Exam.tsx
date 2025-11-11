@@ -27,7 +27,7 @@ const ExamAutoStart = () => {
   }, [navigate]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen text-gray-700">
+    <div className="flex items-center justify-center bg-gradient-to-br from-blackblue-500 to-neutral-700 p-4">
       <p>Exam boshlanmoqda, iltimos kuting...</p>
     </div>
   );

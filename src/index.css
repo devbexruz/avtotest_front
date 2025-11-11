@@ -6,5 +6,26 @@ body {
   padding: 0;
 }
 html {
-  background-color: #212938;
+  background-color: #212121;
+}
+* {
+  outline: none;
+}
+/* Alternativ variant - gradient background */
+#home_page {
+  background: linear-gradient(rgba(50, 50, 50, 100), rgba(50, 50, 50, 255)), url('assets/images/test.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-color: neutral;
+}
+
+#main_container {
+  background: linear-gradient(rgba(20, 20, 20, 0.9)), url('assets/images/test.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-color: neutral;
 }

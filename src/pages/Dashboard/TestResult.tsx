@@ -9,6 +9,7 @@ interface Statistics {
   ignores: number;
   all: number;
   percentage: number;
+  test_type: string;
 }
 
 const TestResult = () => {
@@ -38,10 +39,9 @@ const TestResult = () => {
   if (loading) return <div className="text-center py-4">{c.t("Yuklanmoqda...")}</div>;
   if (!statistics) return <div className="text-center py-4">{c.t("Natija topilmadi")}</div>;
 
-  const { trues, falses, ignores, all, percentage } = statistics;
-
+  const { trues, falses, ignores, all, percentage, test_type } = statistics;
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div id='main_container' className="min-h-screen bg-neutral-50 p-6">
       {/* Ortga va bosh sahifa tugmalari */}
       <div className="flex justify-between items-center mb-6">
         <button
@@ -59,8 +59,8 @@ const TestResult = () => {
       </div>
 
       {/* Asosiy natija kartasi */}
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">
+      <div className="max-w-4xl mx-auto bg-neutral-700 text-white rounded-2xl shadow-lg p-8">
+        <h1 className="text-3xl font-bold text-center text-white mb-8">
           {c.t("Test Natijalari")}
         </h1>
 
@@ -74,7 +74,7 @@ const TestResult = () => {
                 cy="60"
                 r="54"
                 fill="none"
-                stroke="#e5e7eb"
+                stroke="#e5e7eb46"
                 strokeWidth="12"
               />
               {/* Progress */}
@@ -91,10 +91,10 @@ const TestResult = () => {
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-4xl font-bold text-gray-800">
+              <span className="text-4xl font-bold text-neutral-100">
                 {percentage}%
               </span>
-              <span className="text-sm text-gray-600 mt-1">
+              <span className="text-sm text-neutral-200 mt-1">
                 {c.t("To'g'ri javoblar")}
               </span>
             </div>
@@ -104,7 +104,7 @@ const TestResult = () => {
         {/* Statistikalar */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {/* To'g'ri javoblar */}
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+          <div className="bg-green-100 border border-green-200 rounded-xl p-4 text-center">
             <div className="text-2xl font-bold text-green-600">{trues}</div>
             <div className="text-sm text-green-800 mt-1">{c.t("To'g'ri")}</div>
           </div>
@@ -131,11 +131,11 @@ const TestResult = () => {
         {/* Progress barlar */}
         <div className="space-y-4">
           <div>
-            <div className="flex justify-between text-sm text-gray-600 mb-1">
+            <div className="flex justify-between text-sm text-neutral-100 mb-1">
               <span>{c.t("To'g'ri javoblar")}</span>
               <span>{trues} / {all}</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
+            <div className="w-full bg-neutral-200 rounded-full h-3">
               <div 
                 className="bg-green-500 h-3 rounded-full transition-all duration-500"
                 style={{ width: `${(trues / all) * 100}%` }}
@@ -144,11 +144,11 @@ const TestResult = () => {
           </div>
 
           <div>
-            <div className="flex justify-between text-sm text-gray-600 mb-1">
+            <div className="flex justify-between text-sm text-neutral-100 mb-1">
               <span>{c.t("Noto'g'ri javoblar")}</span>
               <span>{falses} / {all}</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
+            <div className="w-full bg-neutral-200 rounded-full h-3">
               <div 
                 className="bg-red-500 h-3 rounded-full transition-all duration-500"
                 style={{ width: `${(falses / all) * 100}%` }}
@@ -157,11 +157,11 @@ const TestResult = () => {
           </div>
 
           <div>
-            <div className="flex justify-between text-sm text-gray-600 mb-1">
+            <div className="flex justify-between text-sm text-neutral-100 mb-1">
               <span>{c.t("O'tkazib yuborilgan")}</span>
               <span>{ignores} / {all}</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
+            <div className="w-full bg-neutral-200 rounded-full h-3">
               <div 
                 className="bg-yellow-500 h-3 rounded-full transition-all duration-500"
                 style={{ width: `${(ignores / all) * 100}%` }}
@@ -171,8 +171,8 @@ const TestResult = () => {
         </div>
 
         {/* Baholash */}
-        <div className="mt-8 p-4 bg-gray-50 rounded-xl text-center">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+        <div className="mt-8 p-4 bg-neutral-300 rounded-xl text-center">
+          <h3 className="text-lg font-semibold text-neutral-800 mb-2">
             {c.t("Baholash")}
           </h3>
           <p className={`text-xl font-bold ${
@@ -181,10 +181,13 @@ const TestResult = () => {
             percentage >= 50 ? "text-yellow-600" :
             "text-red-600"
           }`}>
-            {percentage >= 90 ? c.t("A'lo") :
-             percentage >= 70 ? c.t("Yaxshi") :
-             percentage >= 50 ? c.t("Qoniqarli") :
-             c.t("Qoniqarsiz")}
+            {
+              test_type === "EXAM" && trues>=18 ? c.t("O'tdingiz") :
+              test_type === "EXAM" ? c.t("Yiqildingiz") :
+              percentage >= 90 ? c.t("A'lo") :
+              percentage >= 70 ? c.t("Yaxshi") :
+              percentage >= 50 ? c.t("Qoniqarli") :
+              c.t("Qoniqarsiz")}
           </p>
         </div>
 

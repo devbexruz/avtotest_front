@@ -58,7 +58,7 @@ export const TicketsManagement = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">{c.t("Biletlar Boshqaruvi")}</h2>
+        <h2 className="text-2xl font-bold text-neutral-800">{c.t("Biletlar Boshqaruvi")}</h2>
         <button
           onClick={() => setShowModal(true)}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
@@ -68,33 +68,33 @@ export const TicketsManagement = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-neutral-200">
+          <thead className="bg-neutral-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                 {c.t("ID")}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                 {c.t("Nomi")}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                 {c.t("Harakatlar")}
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white divide-y divide-neutral-200">
             {tickets.map((ticket) => (
               <tr key={ticket.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
                   {ticket.id}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
                   {ticket.name}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                   <button
                     onClick={() => navigateToTests(ticket.id)}
-                    className="text-blue-600 hover:text-blue-900"
+                    className="text-blue-600 hover:text-blue-900 cursor-pointer rounded-md px-2 py-1 bg-blue-100"
                   >
                     {c.t("Testlar")}
                   </button>
@@ -119,13 +119,13 @@ export const TicketsManagement = () => {
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
                     {c.t("Bilet nomi")} *
                   </label>
                   <input
                     type="text"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     value={formData.name}
                     onChange={(e) => setFormData({ name: e.target.value })}
                     placeholder={c.t("Bilet nomini kiriting...")}
@@ -136,7 +136,7 @@ export const TicketsManagement = () => {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md"
+                  className="px-4 py-2 text-neutral-600 hover:text-neutral-800 border border-neutral-300 rounded-md"
                 >
                   {c.t("Bekor qilish")}
                 </button>

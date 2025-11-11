@@ -1,5 +1,10 @@
 export function latinToCyrillic(text: string): string {
+  text = text.replace(/[‘’ʼ']/g, "‘");
+
   const map: Record<string, string> = {
+    "Sh": "Ш", "SH": "Ш", "sh": "ш",
+    "Ch": "Ч", "CH": "Ч", "ch": "ч",
+    "O‘": "Ў", "o‘": "ў", "G‘": "Ғ", "g‘": "ғ",
     A: "А", a: "а",
     B: "Б", b: "б",
     D: "Д", d: "д",
@@ -24,20 +29,14 @@ export function latinToCyrillic(text: string): string {
     X: "Х", x: "х",
     Y: "Й", y: "й",
     Z: "З", z: "з",
-    "ʼ": "ъ", "'": "ъ",
-    "’": "ъ",
-    "O‘": "Ў", "o‘": "ў",
-    "G‘": "Ғ", "g‘": "ғ",
-    "Sh": "Ш", "sh": "ш",
-    "Ch": "Ч", "ch": "ч",
+    "‘": "ъ"
   };
 
   let result = text;
-  // Avval ikki belgili kombinatsiyalarni o‘zgartiramiz
   Object.entries(map)
     .sort(([a], [b]) => b.length - a.length)
     .forEach(([latin, cyr]) => {
-      result = result.replaceAll(latin, cyr);
+      result = result.split(latin).join(cyr);
     });
 
   return result;

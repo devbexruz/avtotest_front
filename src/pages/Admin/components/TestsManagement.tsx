@@ -40,18 +40,24 @@ export const TestsManagement = () => {
   const [loading, setLoading] = useState(true);
   const [showTestModal, setShowTestModal] = useState(false);
   const [showVariantModal, setShowVariantModal] = useState<number | null>(null);
-  const [showImageModal, setShowImageModal] = useState<number | null>(null);
+  // showImageModal faqat mavjud testlarga rasm qo'shish uchun qoldiriladi
+  const [showImageModal, setShowImageModal] = useState<number | null>(null); 
+  
+  // *** testFormData YANGILANDI: imageFile qo'shildi ***
   const [testFormData, setTestFormData] = useState({ 
     value: "", 
     theme: "",
-    ticket: ticketId?.toString() || ""
+    ticket: ticketId?.toString() || "",
+    imageFile: null as File | null // Rasm faylini saqlash uchun
   });
   const [variantFormData, setVariantFormData] = useState({ value: "" });
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null); // Bu faqat eski modal uchun qoladi
   const [themeSearch, setThemeSearch] = useState("");
   
   const closeAddTestModal = () => {
     setShowTestModal(false);
+    // Modal yopilganda formani va tanlangan rasmni tozalash
+    setTestFormData({ value: "", theme: "", ticket: ticketId?.toString() || "", imageFile: null }); 
   };
 
   const fetchTests = async () => {
@@ -106,28 +112,50 @@ export const TestsManagement = () => {
   }, [ticketId]);
 
   const handleThemeSelect = (themeId: number) => {
+    if (themeId.toString() === testFormData.theme){
+      setTestFormData({
+        ...testFormData,
+        theme: "",
+        ticket: ticketId?.toString() || ""
+      });
+    } else {
       setTestFormData({
         ...testFormData,
         theme: themeId.toString(),
         ticket: ticketId?.toString() || ""
       });
+    }
   };
 
+  // *** handleTestSubmit YANGILANDI: FormData bilan rasm qo'shib yuboriladi ***
   const handleTestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // FormData obyekti yaratiladi
+    const formDataToSend = new FormData();
+    formDataToSend.append("value", testFormData.value);
+    formDataToSend.append("ticket", ticketId as string);
+    formDataToSend.append("theme", testFormData.theme);
+    
+    // Rasm faylini qo'shish
+    if (testFormData.imageFile) {
+      formDataToSend.append("image", testFormData.imageFile);
+    }
+
     try {
-      await server.requestPost("/admin/test/", {
-        value: testFormData.value,
-        ticket: parseInt(ticketId as string),
-        theme: parseInt(testFormData.theme as string)
-      });
+      // POST so'rovida FormData yuboriladi
+      await server.requestPost("/admin/test/", formDataToSend);
+      
       setShowTestModal(false);
-      setTestFormData({ value: "", theme: "", ticket: "" });
+      // imageFile ni ham tozalash
+      setTestFormData({ value: "", theme: "", ticket: ticketId?.toString() || "", imageFile: imageFile }); 
       fetchTests();
     } catch (error) {
       console.error("Error creating test:", error);
+      alert(c.t("Test yaratishda xatolik yuz berdi"));
     }
   };
+  // *************************************************************************
 
   const handleVariantSubmit = async (e: React.FormEvent, testId: number) => {
     e.preventDefault();
@@ -140,7 +168,8 @@ export const TestsManagement = () => {
       console.error("Error creating variant:", error);
     }
   };
-
+  
+  // handleImageUpload va handleImageDelete eskisicha qoladi, chunki ular mavjud testga rasm yuklash/o'chirish uchun
   const handleImageUpload = async (testId: number) => {
     if (!imageFile) return;
 
@@ -173,6 +202,7 @@ export const TestsManagement = () => {
     if (!window.confirm(c.t("Test rasmini o'chirishni tasdiqlaysizmi?"))) return;
 
     try {
+      // Serverga rasmni o'chirish PATCH so'rovida image faylsiz yuboriladi
       const response = await fetch(`${server.baseURL}/admin/test/${testId}/`, {
         method: "PATCH",
         headers: {
@@ -197,19 +227,6 @@ export const TestsManagement = () => {
       fetchTests();
     } catch (error) {
       console.error("Error setting correct answer:", error);
-    }
-  };
-
-  const removeCorrectAnswer = async (testId: number) => {
-    return;
-    
-    try {
-      await server.requestPut(`/admin/test/${testId}/`, {
-        correct_answer: null
-      });
-      fetchTests();
-    } catch (error) {
-      console.error("Error removing correct answer:", error);
     }
   };
 
@@ -252,15 +269,15 @@ export const TestsManagement = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">
+        <h2 className="text-2xl font-bold text-neutral-800">
           {ticketId ? `${c.t("Bilet")} #${ticketName} ${c.t("Testlari")}` : c.t("Barcha Testlar")}
         </h2>
-        <button
+        {ticketId && <button
           onClick={() => setShowTestModal(true)}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
         >
           {c.t("+ Yangi Test")}
-        </button>
+        </button>}
       </div>
 
       <div className="space-y-6">
@@ -273,7 +290,7 @@ export const TestsManagement = () => {
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold mb-2">{test.value}</h3>
-                  <div className="text-sm text-gray-600 space-y-1">
+                  <div className="text-sm text-neutral-600 space-y-1">
                     <p>
                       <span className="font-medium">Bilet:</span> {testTicket?.name || test.ticket}
                     </p>
@@ -324,24 +341,26 @@ export const TestsManagement = () => {
                 {variants[test.id]?.map((variant) => (
                   <div
                     key={variant.id}
-                    className={`flex justify-between items-center p-3 rounded border ${
+                    className={`flex justify-between items-center p-3 rounded border-2 ${
                       test.correct_answer === variant.id
-                        ? "bg-green-50 border-green-200"
-                        : "bg-gray-50 border-gray-200"
+                        ? "bg-green-50 border-green-500"
+                        : "bg-neutral-50 border-neutral-200"
                     }`}
                   >
-                    <span className="flex-1">{variant.value}</span>
-                    <div className="flex space-x-2 items-center">
+                    <span
+                    onClick={() => setCorrectAnswer(variant.id)}
+                    className="cursor-pointer flex-1">{variant.value}</span>
+                    <div
+                      className="flex space-x-2 items-center"
+                    >
                       {test.correct_answer !== variant.id ? (
                         <button
                           onClick={() => setCorrectAnswer(variant.id)}
                           className="text-green-600 hover:text-green-900 text-sm bg-green-50 px-2 py-1 rounded"
                         >
-                          {c.t("To'g'ri")}
                         </button>
                       ) : (
                         <button
-                          onClick={() => removeCorrectAnswer(test.id)}
                           className="text-blue-600 text-sm bg-blue-50 px-2 py-1 rounded"
                         >
                           {c.t("Ushbu javon tanlangan")}
@@ -350,7 +369,7 @@ export const TestsManagement = () => {
                       <span className={`text-xs px-2 py-1 rounded ${
                         test.correct_answer === variant.id 
                           ? "bg-green-100 text-green-800" 
-                          : "bg-gray-100 text-gray-800"
+                          : "bg-neutral-100 text-neutral-800"
                       }`}>
                         {test.correct_answer === variant.id ? c.t("✓ To'g'ri") : c.t("Variant")}
                       </span>
@@ -369,44 +388,65 @@ export const TestsManagement = () => {
         })}
       </div>
 
-      {/* Add Test Modal */}
+      {/* Add Test Modal (YANGILANGAN QISM) */}
       {showTestModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
             <h3 className="text-lg font-semibold mb-4">{c.t("Yangi Test")}</h3>
             <form onSubmit={handleTestSubmit}>
               <div className="space-y-4">
+                {/* Savol maydoni */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
                     {c.t("Savol")} *
                   </label>
                   <textarea
                     required
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     value={testFormData.value}
                     onChange={(e) => setTestFormData({...testFormData, value: e.target.value})}
                     placeholder={c.t("Test savolini kiriting...")}
                   />
                 </div>
                 
+                {/* Rasm tanlash maydoni (YANGI) */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        {c.t("Rasm (ixtiyoriy)")}
+                    </label>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        onChange={(e) => setTestFormData({...testFormData, imageFile: e.target.files?.[0] || null})}
+                    />
+                    {testFormData.imageFile && (
+                        <p className="text-xs text-green-600 mt-1">
+                            {c.t("Tanlangan fayl:")} **{testFormData.imageFile.name}**
+                        </p>
+                    )}
+                </div>
+                {/* ******************************* */}
+                
+                {/* Mavzu maydoni */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
                     {c.t("Mavzu")} *
                   </label>
                   <div className="space-y-2">
                     <input
                       type="text"
                       placeholder={c.t("Mavzu nomi bo'yicha qidirish...")}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       value={themeSearch}
                       onChange={(e) => setThemeSearch(e.target.value)}
                     />
-                    <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-md">
+                    <div className="max-h-40 overflow-y-auto border border-neutral-200 rounded-md">
                       {filteredThemes.map((theme) => (
                         <div
                           key={theme.id}
-                          className={`p-3 cursor-pointer hover:bg-gray-50 ${
+                          className={`p-3 cursor-pointer hover:bg-neutral-50 ${
                             testFormData.theme === theme.id.toString() ? "bg-blue-50 border-l-4 border-blue-500" : ""
                           }`}
                           onClick={() => handleThemeSelect(theme.id)}
@@ -419,7 +459,7 @@ export const TestsManagement = () => {
                     {testFormData.theme && (
                       <div className="space-y-2">
                         <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
-                          {c.t("Tanlangan mavzu:")} {themes.find(t => t.id === parseInt(testFormData.theme))?.name}
+                          {c.t("Tanlangan mavzu:")} **{themes.find(t => t.id === parseInt(testFormData.theme))?.name}**
                         </div>
                       </div>
                     )}
@@ -430,13 +470,13 @@ export const TestsManagement = () => {
                 <button
                   type="button"
                   onClick={() => closeAddTestModal()}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md"
+                  className="px-4 py-2 text-neutral-600 hover:text-neutral-800 border border-neutral-300 rounded-md"
                 >
                   {c.t("Bekor qilish")}
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-neutral-400 disabled:cursor-not-allowed"
                 >
                   {c.t("Saqlash")}
                 </button>
@@ -445,8 +485,7 @@ export const TestsManagement = () => {
           </div>
         </div>
       )}
-
-      {/* Add Variant Modal */}
+      {/* Add Variant Modal (o'zgarishsiz) */}
       {showVariantModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
@@ -454,13 +493,13 @@ export const TestsManagement = () => {
             <form onSubmit={(e) => handleVariantSubmit(e, showVariantModal)}>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
                     {c.t("Variant matni")} *
                   </label>
                   <input
                     type="text"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     value={variantFormData.value}
                     onChange={(e) => setVariantFormData({value: e.target.value})}
                     placeholder={c.t("Variant matnini kiriting...")}
@@ -471,7 +510,7 @@ export const TestsManagement = () => {
                 <button
                   type="button"
                   onClick={() => setShowVariantModal(null)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md"
+                  className="px-4 py-2 text-neutral-600 hover:text-neutral-800 border border-neutral-300 rounded-md"
                 >
                   {c.t("Bekor qilish")}
                 </button>
@@ -487,23 +526,23 @@ export const TestsManagement = () => {
         </div>
       )}
 
-      {/* Image Upload Modal */}
+      {/* Image Upload Modal (Yangi test yaratishga qo'shilgani sababli, endi bu faqat o'zgartirish uchun qoldiriladi) */}
       {showImageModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">{c.t("Test rasmini yuklash")}</h3>
+            <h3 className="text-lg font-semibold mb-4">{c.t("Test rasmini yuklash (O'zgartirish)")}</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   {c.t("Rasm faylini tanlang")}
                 </label>
                 <input
                   type="file"
                   accept="image/*"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   onChange={(e) => setImageFile(e.target.files?.[0] || null)}
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-neutral-500 mt-1">
                   {c.t("Qo'llab-quvvatlanadigan formatlar: JPEG, PNG, GIF")}
                 </p>
               </div>
@@ -511,7 +550,7 @@ export const TestsManagement = () => {
               {imageFile && (
                 <div className="bg-green-50 border border-green-200 rounded-md p-3">
                   <p className="text-green-800 text-sm">
-                    {c.t("Tanlangan fayl:")} {imageFile.name}
+                    {c.t("Tanlangan fayl:")} **{imageFile.name}**
                   </p>
                 </div>
               )}
@@ -523,14 +562,14 @@ export const TestsManagement = () => {
                   setShowImageModal(null);
                   setImageFile(null);
                 }}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md"
+                className="px-4 py-2 text-neutral-600 hover:text-neutral-800 border border-neutral-300 rounded-md"
               >
                 {c.t("Bekor qilish")}
               </button>
               <button
                 onClick={() => handleImageUpload(showImageModal)}
                 disabled={!imageFile}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-neutral-400 disabled:cursor-not-allowed"
               >
                 {c.t("Yuklash")}
               </button>

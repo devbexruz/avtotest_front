@@ -32,7 +32,7 @@ const SetTests = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 p-6 flex items-center justify-center">
+    <div id='main_container' className="pb-100 bg-gradient-to-br from-blackblue-500 to-neutral-700 p-4 flex items-center justify-center">
       <div className="max-w-3xl w-full text-center">
         {/* Ortga qaytish */}
         <div className="mb-8 text-left">
@@ -45,10 +45,10 @@ const SetTests = () => {
         </div>
 
         {/* Header */}
-        <h1 className="text-4xl font-bold text-gray-800 mb-3">
+        <h1 className="text-4xl font-bold text-neutral-200 mb-3">
           {c.t("Sozlamali testlar")}
         </h1>
-        <p className="text-gray-600 mb-10 text-lg">
+        <p className="text-neutral-200 mb-10 text-lg">
           {c.t("Sizga kerakli testlar sonini tanlang")}
         </p>
 
@@ -58,7 +58,7 @@ const SetTests = () => {
             <button
               key={i}
               onClick={() => handleSelect(count)}
-              className="relative bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold h-32 rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 flex flex-col justify-center items-center"
+              className="relative bg-neutral-800 border border-neutral-700 px-6 py-4 from-blue-500 to-purple-600 text-white font-semibold h-32 shadow-lg hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 flex flex-col justify-center items-center"
             >
               <div className="text-5xl font-bold">{count}</div>
               <div className="text-sm opacity-90">{c.t("ta test")}</div>
