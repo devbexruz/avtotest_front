@@ -132,14 +132,14 @@ export const UsersStatisticsManagement = () => {
             ) : (
               usersStats.map((stat) => (
                 <tr key={stat.id} className="border-b border-neutral-200 hover:bg-neutral-50">
-                  <td className="py-3 px-6 text-left whitespace-nowrap">{stat.id}</td>
-                  <td className="py-3 px-6 text-left">{stat.name}</td>
-                  <td className="py-3 px-6 text-left">{stat.total_tests}</td>
-                  <td className="py-3 px-6 text-left">{stat.total_correct}</td>
-                  <td className="py-3 px-6 text-left">{stat.total_incorrect}</td>
-                  <td className="py-3 px-6 text-left">{stat.total_questions}</td>
-                  <td className="py-3 px-6 text-left font-medium">{stat.average_score}</td>
-                  <td className="py-3 px-6 text-left font-semibold text-green-600">{stat.best_score}</td>
+                  <td className="py-3 px-6 text-black whitespace-nowrap">{stat.id}</td>
+                  <td className="py-3 px-6 text-black">{stat.name}</td>
+                  <td className="py-3 px-6 text-black">{stat.total_tests}</td>
+                  <td className="py-3 px-6 text-black">{stat.total_correct}</td>
+                  <td className="py-3 px-6 text-black">{stat.total_incorrect}</td>
+                  <td className="py-3 px-6 text-black">{stat.total_questions}</td>
+                  <td className="py-3 px-6 text-black font-medium">{stat.average_score}</td>
+                  <td className="py-3 px-6 text-black font-semibold text-green-600">{stat.best_score}</td>
                   <td className="py-3 px-6 text-center">
                     <button
                       onClick={() => handleDeleteResults(stat.id)}
