@@ -1,4 +1,5 @@
 // TestsManagement.tsx
+
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import server from "../../../utils/Admin";
@@ -40,24 +41,29 @@ export const TestsManagement = () => {
   const [loading, setLoading] = useState(true);
   const [showTestModal, setShowTestModal] = useState(false);
   const [showVariantModal, setShowVariantModal] = useState<number | null>(null);
-  // showImageModal faqat mavjud testlarga rasm qo'shish uchun qoldiriladi
   const [showImageModal, setShowImageModal] = useState<number | null>(null); 
   
-  // *** testFormData YANGILANDI: imageFile qo'shildi ***
   const [testFormData, setTestFormData] = useState({ 
     value: "", 
     theme: "",
     ticket: ticketId?.toString() || "",
-    imageFile: null as File | null // Rasm faylini saqlash uchun
+    imageFile: null as File | null 
   });
   const [variantFormData, setVariantFormData] = useState({ value: "" });
-  const [imageFile, setImageFile] = useState<File | null>(null); // Bu faqat eski modal uchun qoladi
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [themeSearch, setThemeSearch] = useState("");
-  
+  // YANGI: Mavzular ro'yxatining ochilganligini boshqarish
+  const [showThemeDropdown, setShowThemeDropdown] = useState(false);
+
+  // Tanlangan mavzu nomini olish uchun yordamchi funksiya
+  const selectedThemeName = themes.find(t => t.id.toString() === testFormData.theme)?.name || c.t("Mavzu tanlanmagan");
+
   const closeAddTestModal = () => {
     setShowTestModal(false);
-    // Modal yopilganda formani va tanlangan rasmni tozalash
-    setTestFormData({ value: "", theme: "", ticket: ticketId?.toString() || "", imageFile: null }); 
+    setTestFormData({ value: "", theme: "", ticket: ticketId?.toString() || "", imageFile: null });  
+    // Modal yopilganda qidiruv maydoni va dropdown holatini tozalash
+    setThemeSearch("");
+    setShowThemeDropdown(false);
   };
 
   const fetchTests = async () => {
@@ -112,50 +118,46 @@ export const TestsManagement = () => {
   }, [ticketId]);
 
   const handleThemeSelect = (themeId: number) => {
-    if (themeId.toString() === testFormData.theme){
-      setTestFormData({
-        ...testFormData,
-        theme: "",
-        ticket: ticketId?.toString() || ""
-      });
-    } else {
-      setTestFormData({
-        ...testFormData,
-        theme: themeId.toString(),
-        ticket: ticketId?.toString() || ""
-      });
-    }
+    const selectedId = themeId.toString();
+    const isAlreadySelected = selectedId === testFormData.theme;
+
+    // Tanlangan mavzuni tanlash/olib tashlash (toggle)
+    setTestFormData({
+      ...testFormData,
+      theme: isAlreadySelected ? "" : selectedId,
+      ticket: ticketId?.toString() || ""
+    });
+    // Mavzu tanlanganda ro'yxatni yopish
+    setShowThemeDropdown(false); 
+    setThemeSearch(""); // Qidiruvni tozalash
   };
 
-  // *** handleTestSubmit YANGILANDI: FormData bilan rasm qo'shib yuboriladi ***
   const handleTestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // FormData obyekti yaratiladi
     const formDataToSend = new FormData();
     formDataToSend.append("value", testFormData.value);
     formDataToSend.append("ticket", ticketId as string);
-    formDataToSend.append("theme", testFormData.theme);
+    // theme tanlanmagan bo'lsa, uni yubormaslik uchun tekshiruv
+    if (testFormData.theme) {
+        formDataToSend.append("theme", testFormData.theme);
+    }
     
-    // Rasm faylini qo'shish
     if (testFormData.imageFile) {
       formDataToSend.append("image", testFormData.imageFile);
     }
 
     try {
-      // POST so'rovida FormData yuboriladi
       await server.requestPost("/admin/test/", formDataToSend);
       
       setShowTestModal(false);
-      // imageFile ni ham tozalash
-      setTestFormData({ value: "", theme: "", ticket: ticketId?.toString() || "", imageFile: imageFile }); 
+      setTestFormData({ value: "", theme: "", ticket: ticketId?.toString() || "", imageFile: null }); 
       fetchTests();
     } catch (error) {
       console.error("Error creating test:", error);
       alert(c.t("Test yaratishda xatolik yuz berdi"));
     }
   };
-  // *************************************************************************
 
   const handleVariantSubmit = async (e: React.FormEvent, testId: number) => {
     e.preventDefault();
@@ -169,7 +171,6 @@ export const TestsManagement = () => {
     }
   };
   
-  // handleImageUpload va handleImageDelete eskisicha qoladi, chunki ular mavjud testga rasm yuklash/o'chirish uchun
   const handleImageUpload = async (testId: number) => {
     if (!imageFile) return;
 
@@ -202,7 +203,7 @@ export const TestsManagement = () => {
     if (!window.confirm(c.t("Test rasmini o'chirishni tasdiqlaysizmi?"))) return;
 
     try {
-      // Serverga rasmni o'chirish PATCH so'rovida image faylsiz yuboriladi
+      // Rasmni o'chirish uchun maxsus PATCH so'rovi (faqat shu yerda o'zgartirilmasdan qoladi)
       const response = await fetch(`${server.baseURL}/admin/test/${testId}/`, {
         method: "PATCH",
         headers: {
@@ -283,7 +284,6 @@ export const TestsManagement = () => {
       <div className="space-y-6">
         {tests.map((test) => {
           const testTicket = tickets.find(t => t.id === test.ticket);
-          const testTheme = themes.find(t => t.id === testTicket?.theme);
           
           return (
             <div key={test.id} className="bg-white rounded-lg shadow p-6">
@@ -293,9 +293,6 @@ export const TestsManagement = () => {
                   <div className="text-sm text-neutral-600 space-y-1">
                     <p>
                       <span className="font-medium">Bilet:</span> {testTicket?.name || test.ticket}
-                    </p>
-                    <p>
-                      <span className="font-medium">Mavzu:</span> {testTheme?.name || "Noma'lum"}
                     </p>
                   </div>
                 </div>
@@ -367,8 +364,8 @@ export const TestsManagement = () => {
                         </button>
                       )}
                       <span className={`text-xs px-2 py-1 rounded ${
-                        test.correct_answer === variant.id 
-                          ? "bg-green-100 text-green-800" 
+                        test.correct_answer === variant.id  
+                          ? "bg-green-100 text-green-800"  
                           : "bg-neutral-100 text-neutral-800"
                       }`}>
                         {test.correct_answer === variant.id ? c.t("✓ To'g'ri") : c.t("Variant")}
@@ -388,7 +385,7 @@ export const TestsManagement = () => {
         })}
       </div>
 
-      {/* Add Test Modal (YANGILANGAN QISM) */}
+      {/* Add Test Modal (YANGILANGAN MAVZU QISMI) */}
       {showTestModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
@@ -410,16 +407,16 @@ export const TestsManagement = () => {
                   />
                 </div>
                 
-                {/* Rasm tanlash maydoni (YANGI) */}
+                {/* Rasm tanlash maydoni (o'zgarishsiz) */}
                 <div>
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
-                        {c.t("Rasm (ixtiyoriy)")}
+                      {c.t("Rasm (ixtiyoriy)")}
                     </label>
                     <input
-                        type="file"
-                        accept="image/*"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        onChange={(e) => setTestFormData({...testFormData, imageFile: e.target.files?.[0] || null})}
+                      type="file"
+                      accept="image/*"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      onChange={(e) => setTestFormData({...testFormData, imageFile: e.target.files?.[0] || null})}
                     />
                     {testFormData.imageFile && (
                         <p className="text-xs text-green-600 mt-1">
@@ -427,44 +424,73 @@ export const TestsManagement = () => {
                         </p>
                     )}
                 </div>
-                {/* ******************************* */}
                 
-                {/* Mavzu maydoni */}
-                <div>
+                {/* Mavzu maydoni (YANGILANGAN QISM) */}
+                <div className="relative">
                   <label className="block text-sm font-medium text-neutral-700 mb-1">
                     {c.t("Mavzu")} *
                   </label>
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      placeholder={c.t("Mavzu nomi bo'yicha qidirish...")}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      value={themeSearch}
-                      onChange={(e) => setThemeSearch(e.target.value)}
-                    />
-                    <div className="max-h-40 overflow-y-auto border border-neutral-200 rounded-md">
-                      {filteredThemes.map((theme) => (
-                        <div
-                          key={theme.id}
-                          className={`p-3 cursor-pointer hover:bg-neutral-50 ${
-                            testFormData.theme === theme.id.toString() ? "bg-blue-50 border-l-4 border-blue-500" : ""
-                          }`}
-                          onClick={() => handleThemeSelect(theme.id)}
-                        >
-                          <div className="font-medium">{theme.name}</div>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {testFormData.theme && (
-                      <div className="space-y-2">
-                        <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
-                          {c.t("Tanlangan mavzu:")} **{themes.find(t => t.id === parseInt(testFormData.theme))?.name}**
-                        </div>
+                  
+                  {/* Dropdown tugmasi - Tanlangan elementni ko'rsatib turadi */}
+                  <button
+                    type="button"
+                    onClick={() => setShowThemeDropdown(prev => !prev)}
+                    className={`w-full text-left px-3 py-2 border rounded-md transition-colors duration-150 flex justify-between items-center ${
+                      testFormData.theme 
+                        ? "bg-blue-50 border-blue-500 text-blue-800 font-medium" 
+                        : "bg-white border-neutral-300 text-neutral-700 hover:border-neutral-400"
+                    }`}
+                  >
+                    {selectedThemeName}
+                    <svg className={`w-4 h-4 transition-transform ${showThemeDropdown ? 'transform rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </button>
+                  
+                  {/* Mavzular ro'yxati (Dropdown Content) */}
+                  {showThemeDropdown && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg">
+                      <div className="p-2">
+                        {/* Qidiruv maydoni */}
+                        <input
+                          type="text"
+                          placeholder={c.t("Mavzu nomi bo'yicha qidirish...")}
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 mb-2"
+                          value={themeSearch}
+                          onChange={(e) => setThemeSearch(e.target.value)}
+                          onClick={(e) => e.stopPropagation()} // Inputga bosilganda dropdown yopilmasligi uchun
+                        />
                       </div>
-                    )}
-                  </div>
+                      <div className="max-h-40 overflow-y-auto">
+                        {filteredThemes.length > 0 ? (
+                            filteredThemes.map((theme) => (
+                              <div
+                                key={theme.id}
+                                className={`p-3 cursor-pointer hover:bg-neutral-50 ${
+                                  testFormData.theme === theme.id.toString() 
+                                    ? "bg-blue-100 font-semibold" 
+                                    : ""
+                                }`}
+                                onClick={() => handleThemeSelect(theme.id)}
+                              >
+                                {theme.name}
+                              </div>
+                            ))
+                        ) : (
+                          <div className="p-3 text-neutral-500 text-sm">
+                            {c.t("Mavzu topilmadi.")}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Qo'shimcha ma'lumot - tanlangan mavzuni yana bir bor ko'rsatish */}
+                  {testFormData.theme && (
+                    <div className="text-xs text-blue-600 mt-2">
+                        {c.t("Tanlangan: ")} **{selectedThemeName}**
+                    </div>
+                  )}
                 </div>
+                {/* ******************************* */}
               </div>
               <div className="mt-6 flex justify-end space-x-3">
                 <button
@@ -526,7 +552,7 @@ export const TestsManagement = () => {
         </div>
       )}
 
-      {/* Image Upload Modal (Yangi test yaratishga qo'shilgani sababli, endi bu faqat o'zgartirish uchun qoldiriladi) */}
+      {/* Image Upload Modal (o'zgarishsiz) */}
       {showImageModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">

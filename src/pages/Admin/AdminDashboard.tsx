@@ -1,6 +1,3 @@
-
-
-
 // src/pages/Admin/AdminDashboard.tsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +8,10 @@ import { UsersManagement } from "./components/UserManagement";
 import { ThemesManagement } from "./components/ThemeManagement";
 import { TicketsManagement } from "./components/TicketManagement";
 import { TestsManagement } from "./components/TestsManagement";
-import { ConnectionsManagement } from "./components/ConnectionsManagement"; // Yangi import
+import { ConnectionsManagement } from "./components/ConnectionsManagement";
+// Yangi import
+import { UsersStatisticsManagement } from "./components/UsersStatisticsManagement";
+
 
 interface Statistics {
   users: number;
@@ -35,7 +35,9 @@ const AdminDashboard = () => {
   const fetchStatistics = async () => {
     try {
       setLoading(true);
-      const data = await server.requestGet<Statistics>("/admin/statistics/");
+      // Bu yerda /admin/statistics/ API call bo'ladi
+      // Agar backendda yangi 'user_stats_count' maydoni qo'shilsa, uni ham Statistics interfeysiga qo'shish kerak.
+      const data = await server.requestGet<Statistics>("/admin/statistics/"); 
       setStats(data);
     } catch (error) {
       console.error("Error fetching statistics:", error);
@@ -47,20 +49,30 @@ const AdminDashboard = () => {
   const menuItems = [
     { id: "dashboard", name: "Dashboard", icon: "📊" },
     { id: "users", name: "Foydalanuvchilar", icon: "👥" },
+    // Yangi bo'lim: Foydalanuvchilar statistikasi
+    { id: "allstats", name: "Foyd. Statistikasi", icon: "📈" }, 
     { id: "themes", name: "Mavzular", icon: "📚" },
     { id: "tickets", name: "Biletlar", icon: "🎫" },
     { id: "tests", name: "Testlar", icon: "📝" },
-    { id: "connections", name: "Bog'lanish", icon: "📞" }, // Yangi menu item
+    { id: "connections", name: "Bog'lanish", icon: "📞" },
   ];
+  
   const setPage = (id: string) => {
     navigate(`/admin/${id}`);
     setActiveTab(id);
   }
-  menuItems.map((item) => {
-    if (window.location.href.includes(`/admin/${item.id}`) && activeTab !== item.id) {
-      setPage(item.id);
+  
+  // URL asosida aktiv tabni o'rnatish logikasi (mavjud qism)
+  useEffect(() => {
+    const currentPath = window.location.pathname;
+    const match = menuItems.find(item => currentPath.includes(`/admin/${item.id}`));
+    if (match && activeTab !== match.id) {
+      setActiveTab(match.id);
+    } else if (!match && currentPath === '/admin' && activeTab !== 'dashboard') {
+      setActiveTab('dashboard');
     }
-  })
+  }, [window.location.pathname]); // `window.location.href` o'rniga `window.location.pathname` ishlatish yaxshiroq
+
   return (
     <div className="min-h-screen bg-neutral-100 flex">
       {/* Sidebar */}
@@ -91,16 +103,17 @@ const AdminDashboard = () => {
       <div className="flex-1 p-8">
         {activeTab === "dashboard" && <DashboardContent stats={stats} loading={loading} onRefresh={fetchStatistics} />}
         {activeTab === "users" && <UsersManagement />}
+        {activeTab === "allstats" && <UsersStatisticsManagement />} {/* Yangi komponentni chaqirish */}
         {activeTab === "themes" && <ThemesManagement />}
         {activeTab === "tickets" && <TicketsManagement />}
         {activeTab === "tests" && <TestsManagement />}
-        {activeTab === "connections" && <ConnectionsManagement />} {/* Yangi komponent */}
+        {activeTab === "connections" && <ConnectionsManagement />}
       </div>
     </div>
   );
 };
 
-// Dashboard Content Component
+// Dashboard Content Component (O'zgartirilmagan)
 interface DashboardContentProps {
   stats: Statistics | null;
   loading: boolean;
@@ -108,10 +121,13 @@ interface DashboardContentProps {
 }
 
 const DashboardContent = ({ stats, loading, onRefresh }: DashboardContentProps) => {
-    // const navigate = useNavigate();
+  // const navigate = useNavigate();
   const setPage = (id: string) => {
-    window.location.replace(`/admin/${id}`);
+    // navigate(`/admin/${id}`); // O'rniga useNavigate ishlatish yaxshiroq
+    window.location.replace(`/admin/${id}`); // Avvalgi kod bo'yicha qoldirildi
   }
+  
+  // ... (yuklanish va xato holatlari - o'zgartirilmagan)
   if (loading) {
     return (
       <div>
@@ -252,6 +268,19 @@ const DashboardContent = ({ stats, loading, onRefresh }: DashboardContentProps) 
             </button>
             
             <button 
+              onClick={() => setPage("allstats")} // Yangi tugma
+              className="w-full text-left p-3 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-red-600">📈</span>
+                <div>
+                  <p className="font-medium text-neutral-800">Foydalanuvchilar Test Statistikasi</p>
+                  <p className="text-sm text-neutral-600">Test natijalarini ko'rish va o'chirish</p>
+                </div>
+              </div>
+            </button>
+            
+            <button 
               onClick={() => setPage("tests")}
               className="w-full text-left p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
             >
@@ -263,7 +292,7 @@ const DashboardContent = ({ stats, loading, onRefresh }: DashboardContentProps) 
                 </div>
               </div>
             </button>
-            {/* Yangi Connections tugmasi */}
+            
             <button 
               onClick={() => setPage("connections")}
               className="w-full text-left p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors"
