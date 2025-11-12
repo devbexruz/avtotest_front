@@ -44,6 +44,7 @@ const SolveTest = () => {
 
   useEffect(() => {
     fetchTests();
+    containerRef.current?.focus();
     return () => {
         if (autoAdvanceTimeoutRef.current) {
             clearTimeout(autoAdvanceTimeoutRef.current); // Avtomatik o'tishni bekor qiladi
@@ -52,6 +53,7 @@ const SolveTest = () => {
     };
   }, [currentIndex]); // currentIndex o'zgarganda ishlaydi
 
+  
   if (loading) return <div className="text-center py-4">Yuklanmoqda...</div>;
   if (!tests.length) return <div className="text-center py-4">Test topilmadi</div>;
 
@@ -61,7 +63,12 @@ const SolveTest = () => {
 
   // Controll Test
   // Keys event
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    // FAQAT kursor tugmalari va F1-F9 uchun ishlatamiz.
+    if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) {
+        return; // Ortig'cha eventlarni bekor qilish
+    }
+
     console.log(event.key);
     if (event.key === "ArrowLeft") {
       event.preventDefault();
@@ -78,10 +85,17 @@ const SolveTest = () => {
         setFeedback(null);
       }
     }
-    // If number is digit
-    else if (event.key >= "0" && event.key <= "9") {
-      const index = parseInt(event.key) - 1;
-      handleSelectVariant(currentTest.variants[index]);
+    // F1 dan F9 gacha bo'lgan tugmalar uchun
+    else if (event.key.startsWith("F") && event.key.length === 2 && event.key !== "F10" && event.key !== "F11" && event.key !== "F12") {
+      event.preventDefault(); // Brauzerning standart F-tugma harakatini bekor qilish
+      const fNumber = parseInt(event.key.substring(1)); // "F1" dan 1 ni olish
+      
+      if (fNumber >= 1 && fNumber <= 9) {
+        const index = fNumber - 1; // Variant indeksi 0 dan boshlanadi
+        if (currentTest.variants[index]) {
+            handleSelectVariant(currentTest.variants[index]);
+        }
+      }
     }
   };
 
@@ -121,8 +135,10 @@ const SolveTest = () => {
     }
   };
   const handleFinished = () => {
-    server.requestPost(`/solve_tests/${result_id}/finish/`, {});
-    navigate(`/test_result/${result_id}`);
+    const res = server.requestPost(`/solve_tests/${result_id}/finish/`, {});
+    res.then(() => {
+      navigate(`/test_result/${result_id}`);
+    })
   }
 
   return (
@@ -165,7 +181,7 @@ const SolveTest = () => {
                 className={`focus:outline-none focus:ring-0 cursor-pointer p-[3px] text-left transition ${bgClass}`}
                 disabled={feedback!==null} // Javob berilganidan keyin yana bosilmasin
               >
-                <span className="mr-2 text-white font-semibold bg-blue-600 h-8 w-8 inline-flex items-center justify-center ">{index + 1}</span>{c.t(v.value)}
+                <span className="mr-2 text-white font-semibold bg-blue-600 h-8 w-8 inline-flex items-center justify-center ">F{index + 1}</span>{c.t(v.value)}
               </button>
             );
           })}

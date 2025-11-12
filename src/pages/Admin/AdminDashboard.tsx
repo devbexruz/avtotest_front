@@ -11,6 +11,7 @@ import { TestsManagement } from "./components/TestsManagement";
 import { ConnectionsManagement } from "./components/ConnectionsManagement";
 // Yangi import
 import { UsersStatisticsManagement } from "./components/UsersStatisticsManagement";
+import { EndResults } from "./components/EndResults";
 
 
 interface Statistics {
@@ -50,7 +51,8 @@ const AdminDashboard = () => {
     { id: "dashboard", name: "Dashboard", icon: "📊" },
     { id: "users", name: "Foydalanuvchilar", icon: "👥" },
     // Yangi bo'lim: Foydalanuvchilar statistikasi
-    { id: "allstats", name: "Foyd. Statistikasi", icon: "📈" }, 
+    { id: "allstats", name: "Foyd. Statistikasi", icon: "📈" },
+    { id: "endresults", name: "Natijalar", icon: "🏆" },
     { id: "themes", name: "Mavzular", icon: "📚" },
     { id: "tickets", name: "Biletlar", icon: "🎫" },
     { id: "tests", name: "Testlar", icon: "📝" },
@@ -104,6 +106,7 @@ const AdminDashboard = () => {
         {activeTab === "dashboard" && <DashboardContent stats={stats} loading={loading} onRefresh={fetchStatistics} />}
         {activeTab === "users" && <UsersManagement />}
         {activeTab === "allstats" && <UsersStatisticsManagement />} {/* Yangi komponentni chaqirish */}
+        {activeTab === "endresults" && <EndResults />}
         {activeTab === "themes" && <ThemesManagement />}
         {activeTab === "tickets" && <TicketsManagement />}
         {activeTab === "tests" && <TestsManagement />}

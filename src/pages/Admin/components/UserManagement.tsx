@@ -10,11 +10,44 @@ interface User {
   role: string; // "ADMIN" yoki "STUDENT"
 }
 
+interface StatisticsData {
+  total_tests: number;
+  total_correct: number;
+  total_incorrect: number;
+  total_questions: number;
+  average_score: number;
+  average_percent: number;
+  best_score: number;
+}
+
 export const UsersManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showUserStatisticModal, setUserStatisticModal] = useState(false);
+  const [stats, setStats] = useState<StatisticsData>({
+    total_tests: 0,
+    total_correct: 0,
+    total_incorrect: 0,
+    total_questions: 0,
+    average_score: 0,
+    average_percent: 0,
+    best_score: 0
+  });
+
+  const getUserStatistics = async (user_id: number) => {
+    try {
+      const res = await server.requestGet<StatisticsData>("/admin/user_statistics/" + user_id+"/");
+      setStats(res);
+      setUserStatisticModal(true);
+    } catch (error) {
+      console.error(c.t("Statistikani olishda xatolik:"), error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({
     username: "",
@@ -148,6 +181,9 @@ export const UsersManagement = () => {
                 {c.t("Ism")}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                {c.t("Statistika")}
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                 {c.t("Admin")}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
@@ -166,6 +202,12 @@ export const UsersManagement = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
                   {user.full_name || "-"}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
+                  <button
+                    className="cursor-pointer text-neutral-600 hover:text-neutral-900 rounded p-2 bg-green-100"
+                    onClick={() => getUserStatistics(user.id)}
+                  >📊 ko'rish</button>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <label className="inline-flex items-center cursor-pointer">
@@ -354,6 +396,58 @@ export const UsersManagement = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Show User Statistic Modal */}
+      {showUserStatisticModal && (
+
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-neutral-700 shadow-lg p-8 w-full max-w-2xl border border-neutral-500">
+            <h1 className="text-3xl font-bold text-neutral-200 text-center mb-6">
+              {c.t("📊 Umumiy statistika")}
+            </h1>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 text-center">
+              <div className="bg-blue-500 border border-neutral-500 p-4">
+                <p className="text-neutral-50 text-sm">{c.t("Jami testlar")}</p>
+                <p className="text-2xl font-bold text-neutral-100">{stats.total_tests}</p>
+              </div>
+
+              <div className="bg-green-500 border border-neutral-500 p-4">
+                <p className="text-neutral-50 text-sm">{c.t("To‘g‘ri javoblar")}</p>
+                <p className="text-2xl font-bold text-neutral-100">{stats.total_correct}</p>
+              </div>
+
+              <div className="bg-red-500 border border-neutral-500 p-4">
+                <p className="text-neutral-50 text-sm">{c.t("Noto‘g‘ri javoblar")}</p>
+                <p className="text-2xl font-bold text-neutral-100">{stats.total_incorrect}</p>
+              </div>
+
+              <div className="bg-yellow-500 border border-neutral-500 p-4 col-span-2 sm:col-span-1">
+                <p className="text-neutral-50 text-sm">{c.t("O‘rtacha ball")}</p>
+                <p className="text-2xl font-bold text-neutral-100">{stats.average_score}</p>
+              </div>
+
+              <div className="bg-purple-500 border border-neutral-500 p-4">
+                <p className="text-neutral-50 text-sm">{c.t("O‘rtacha foiz")}</p>
+                <p className="text-2xl font-bold text-neutral-100">{stats.average_percent}%</p>
+              </div>
+
+              <div className="bg-orange-500 border border-neutral-500 p-4">
+                <p className="text-neutral-50 text-sm">{c.t("Eng yuqori ball")}</p>
+                <p className="text-2xl font-bold text-neutral-100">{stats.best_score}</p>
+              </div>
+            </div>
+
+            <div className="text-center mt-8">
+              <button
+                onClick={() => setUserStatisticModal(false)}
+                className="px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all"
+              >
+                {c.t("❌ Yopish")}
+              </button>
+            </div>
           </div>
         </div>
       )}
