@@ -34,7 +34,11 @@ const Themes = () => {
   // 🔹 Testni boshlash
   const startThemeTest = async (themeId: number) => {
     try {
-      const response = await server.requestPost<{ id: number }>("/start_tests/start_theme/", { theme_id: themeId });
+      const response = await server.requestPost<{ id: number, error?: string }>("/start_tests/start_theme/", { theme_id: themeId });
+      if (response.error) {
+        alert(response.error);
+        return;
+      }
       const resultId = response.id; // backendda Result id qaytishi kerak
       setActiveResults((prev) => ({ ...prev, [themeId]: resultId }));
       navigate(`/testresult/${resultId}`);

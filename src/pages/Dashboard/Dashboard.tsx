@@ -73,23 +73,19 @@ const Dashboard: React.FC = () => {
 
   return (
     <div 
-      id='main_container' className="min-h-screen p-4">
-      <div className="max-w-2xl mx-auto">
+      id='main_container' className="sm:min-h-screen p-4">
+      <div className="max-w-2xl sm:mx-auto">
         
 
         {/* Vertical Buttons Section */}
-        <div className="flex flex-col space-y-4 mb-8 p-10 mt-20  bg-neutral-800 border border-neutral-700">
+        <div className="flex flex-col space-y-4 mb-8 p-10 sm:mt-20  bg-neutral-800 border border-neutral-700">
 
           {/* Header Section */}
           <div className="text-center m-0 p-0">
-            <h1 className="text-3xl font-bold mb-2 text-white">
+            <h1 className="text-xl sm:text-3xl font-bold mb-4 sm:mb-10 text-white">
               {c.t("🚀 Prava olish endi biz bilan oson!")}
             </h1>
-            <p className="text-lg text-neutral-300 mt-4">
-              {c.t("2025-yil 6-martdan yangilangan testlar")}
-            </p>
           </div>
-          <hr className='text-neutral-600 mb-10'/>
 
           {/* Buttons Section */}
           {buttons.map((button, index) => (
@@ -99,11 +95,11 @@ const Dashboard: React.FC = () => {
               className="bg-neutral-800 hover:translate-y-[-2px] p-2shadow hover:bg-neutral-700 p-2 border border-neutral-700 hover:bg-neutral-900 cursor-pointer transition-all ease-out-in duration-200"
             >
               <div className="flex items-center space-x-4">
-                <div className="text-2xl p-1">
+                <div className="text-x sm:text-2xl p-1">
                   {button.icon}
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-base font-semibold text-white mb-1">
+                  <h3 className="text-x sm:text-base font-semibold text-white mb-1">
                     {c.t(button.title)}
                   </h3>
                 </div>
@@ -111,7 +107,7 @@ const Dashboard: React.FC = () => {
             </div>
           ))}
           {/* Horizontal Connections IconButtons */}
-          <div className="flex items-center space-x-4 mt-4 justify-center gap-4 ">
+          <div className="flex items-center space-x-4 mt-2 sm:mt-4 justify-center gap-4 ">
             { connections.telegram_link && <a className='bg-neutral-600 hover:scale-110 duration-200 ease-in border border-neutral-500 rounded-full p-2' href={connections.telegram_link} target="_blank" rel="noopener noreferrer">
               <img
                 src="https://img.icons8.com/color/48/000000/telegram-app--v1.png"

@@ -196,7 +196,7 @@ const SolveTest = () => {
               className="max-h-[400px] object-contain shadow"
             />
           ) : (
-            <div className="h-96 bg-[rgb(0,0,20,0.4)] flex items-center justify-center text-neutral-500">
+            <div className="sm:h-96 bg-[rgb(0,0,20,0.4)] flex items-center justify-center text-neutral-500">
             </div>
           )}
         </div>

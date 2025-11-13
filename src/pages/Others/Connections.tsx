@@ -60,12 +60,12 @@ const Connections: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-900 text-white flex items-center justify-center p-4">
-      <div className="max-w-3xl w-full bg-neutral-800 p-20 shadow-2xl text-center  px-[5%]">
+    <div className="sm:min-h-screen bg-neutral-900 text-white flex items-center justify-center p-4">
+      <div className="max-w-3xl w-full sm:bg-neutral-800 sm:p-20 sm:shadow-2xl text-center  px-[5%]">
         
         {/* Sarlavha va Telefon Raqami */}
         <header className="mb-10">
-          <h1 className="text-4xl font-extrabold text-white mb-2 tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-white mb-2 tracking-tight">
             {c.t("Biz bilan bog'laning")} 📞
           </h1>
           <p className="text-neutral-400 mb-6">
@@ -83,7 +83,7 @@ const Connections: React.FC = () => {
 
         {/* Qo'ng'iroq Tugmasi */}
         <div className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4 text-neutral-200">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-neutral-200">
             {c.t("Tezkor Bog'lanish")}
           </h2>
           <a
@@ -99,7 +99,7 @@ const Connections: React.FC = () => {
 
         {/* Ijtimoiy Tarmoqlar */}
         <div className="mb-10">
-          <h2 className="text-2xl font-semibold mb-4 text-neutral-200">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-neutral-200">
             {c.t("Ijtimoiy Tarmoqlar")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
